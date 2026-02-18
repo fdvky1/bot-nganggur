@@ -26,6 +26,9 @@ importers:
       dotenv:
         specifier: ^17.3.1
         version: 17.3.1
+      luxon:
+        specifier: ^3.7.2
+        version: 3.7.2
       node-cron:
         specifier: ^4.2.1
         version: 4.2.1
@@ -345,6 +348,10 @@ packages:
   loglevel@1.9.2:
     resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
     engines: {node: '>= 0.6.0'}
+
+  luxon@3.7.2:
+    resolution: {integrity: sha512-vtEhXh/gNjI9Yg1u4jX/0YVPMvxzHuGgCm6tC5kZyb08yjGWGnqAjGJvcXbqQR2P3MyMEFnRbpcdFS6PBcLqew==}
+    engines: {node: '>=12'}
 
   mimic-response@3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
@@ -895,6 +902,8 @@ snapshots:
   lodash@4.17.23: {}
 
   loglevel@1.9.2: {}
+
+  luxon@3.7.2: {}
 
   mimic-response@3.1.0: {}
 

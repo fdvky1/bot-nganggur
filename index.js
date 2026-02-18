@@ -2,13 +2,15 @@ import "dotenv/config";
 import cron from "node-cron";
 import { Client } from 'discord.js-selfbot-v13';
 import { joinVoiceChannel } from "@discordjs/voice";
+import { DateTime } from "luxon";
 import generateMeme from "./meme.js";
 
 const TOKEN = process.env.TOKEN;
 const channelId = process.env.CHANNEL_ID;
+const TIMEZONE = "Asia/Jakarta";
 
-// Ramadan 2026 start date (adjust as needed)
-const start = new Date(process.env.START_DATE);
+// Ramadan 2026 start date - parsed with consistent timezone
+const start = DateTime.fromISO(process.env.START_DATE, { zone: TIMEZONE });
 
 const days = {
     1: "Pertama",
@@ -63,14 +65,15 @@ client.on('ready', async () => {
 cron.schedule(process.env.CRON, async () => {
     try {
         console.log("Uploading...")
-        const now = new Date();
-        const diff = (Math.floor((now.getTime() - start.getTime())/(1000*60*60*24))) + 1;
+        // Use luxon for timezone-aware day calculation
+        const now = DateTime.now().setZone(TIMEZONE);
+        const diff = Math.floor(now.startOf('day').diff(start.startOf('day'), 'days').days) + 1;
         const image = await generateMeme("./assets/images/mr_crab.jpg", "SEMANGAT PUASA HARI " + (days[diff]?.toUpperCase() || "KE-" + diff), "YAA.... HARI " + (days[diff]?.toUpperCase() || "KE-" + diff));
         client.channels.fetch(process.env.CHANNEL_ID).then(channel => {
             channel.send({
                 files: [{
                     attachment: image,
-                    name: new Date().toLocaleDateString() + '.jpg'
+                    name: now.toFormat('dd-MM-yyyy') + '.jpg'
                 }]
             });
         }).catch(console.error);
