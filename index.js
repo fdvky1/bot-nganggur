@@ -7,9 +7,8 @@ import generateMeme from "./meme.js";
 
 const TOKEN = process.env.TOKEN;
 const channelId = process.env.CHANNEL_ID;
-const TIMEZONE = "Asia/Jakarta";
+const TIMEZONE = process.env.TZ || "Asia/Jakarta";
 
-// Ramadan 2026 start date - parsed with consistent timezone
 const start = DateTime.fromISO(process.env.START_DATE, { zone: TIMEZONE });
 
 const days = {
@@ -69,7 +68,7 @@ cron.schedule(process.env.CRON, async () => {
         const now = DateTime.now().setZone(TIMEZONE);
         const diff = Math.floor(now.startOf('day').diff(start.startOf('day'), 'days').days) + 1;
         const image = await generateMeme("./assets/images/mr_crab.jpg", "SEMANGAT PUASA HARI " + (days[diff]?.toUpperCase() || "KE-" + diff), "YAA.... HARI " + (days[diff]?.toUpperCase() || "KE-" + diff));
-        client.channels.fetch(process.env.CHANNEL_ID).then(channel => {
+        client.channels.fetch(channelId).then(channel => {
             channel.send({
                 files: [{
                     attachment: image,
@@ -84,7 +83,7 @@ cron.schedule(process.env.CRON, async () => {
     }
 }, {
     scheduled: true,
-    timezone: "Asia/Jakarta",
+    timezone: TIMEZONE,
 });
 
 client.login(TOKEN).then(() => {
