@@ -1,10 +1,10 @@
 import Canvas, { registerFont} from "canvas";
 
+registerFont(`./assets/fonts/Impact.ttf`, {
+  family: "Impact",
+});
 
 const wrapText = (ctx, text, maxWidth) => {
-    registerFont(`./assets/fonts/Impact.ttf`, {
-      family: "Impact",
-    });
     if(ctx.measureText(text).width < maxWidth) return [text];
     if(ctx.measureText("W").width > maxWidth) return null;
     const words = text.split(" ");
