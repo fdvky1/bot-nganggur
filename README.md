@@ -23,8 +23,8 @@ A Discord selfbot that:
 
 1. Clone this repository
 ```bash
-git clone https://github.com/username/RTRT.git
-cd RTRT
+git clone https://git.fdvky.me/Fd/rtrt.git
+cd rtrt
 ```
 
 2. Install dependencies
