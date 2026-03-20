@@ -8,6 +8,8 @@ import generateMeme from "./meme.js";
 const TOKEN = process.env.TOKEN;
 const channelId = process.env.CHANNEL_ID;
 const TIMEZONE = process.env.TZ || "Asia/Jakarta";
+const RECONNECT_DELAY = Number(process.env.RECONNECT_DELAY || 10_000);
+const RECONNECT_WINDOW = Number(process.env.RECONNECT_WINDOW || 60_000);
 
 const start = DateTime.fromISO(process.env.START_DATE, { zone: TIMEZONE });
 
@@ -27,12 +29,26 @@ const days = {
 
 const client = new Client();
 
-const joinVoice = async (client, channelId, config) => {
+const scheduleReconnect = (client, channelId, config, meta) => {
+    const reconnectMeta = meta || { startedAt: Date.now() };
+    const elapsed = Date.now() - reconnectMeta.startedAt;
+
+    if (elapsed >= RECONNECT_WINDOW) {
+        console.error(`[${client.user?.username || 'UNKNOWN'}] Reconnect window (${RECONNECT_WINDOW / 1000}s) exceeded.`);
+        return;
+    }
+
+    const delay = Math.min(RECONNECT_DELAY, RECONNECT_WINDOW - elapsed);
+    console.log(`[${client.user?.username || 'UNKNOWN'}] Scheduling reconnect in ${delay / 1000}s (elapsed ${Math.round(elapsed / 1000)}s).`);
+    setTimeout(() => joinVoice(client, channelId, config, reconnectMeta), delay);
+};
+
+const joinVoice = async (client, channelId, config, reconnectMeta) => {
     try {
         const channel = await client.channels.fetch(channelId).catch(() => null);
         if (!channel) {
             console.error(`[${client.user?.username || 'UNKNOWN'}] Channel ${channelId} not found.`);
-            return setTimeout(() => joinVoice(client, channelId, config), 10000);
+            return scheduleReconnect(client, channelId, config, reconnectMeta);
         }
 
         const connection = joinVoiceChannel({
@@ -45,16 +61,16 @@ const joinVoice = async (client, channelId, config) => {
 
         connection.on('error', error => {
             console.error(`[${client.user.username}] Error voice connection: ${error}`);
-            setTimeout(() => joinVoice(client, channelId, config), 10000);
+            scheduleReconnect(client, channelId, config);
         });
         
         connection.on(VoiceConnectionStatus.Disconnected, () => {
-            console.log(`[${client.user.username}] Voice connection terputus. Mencoba terhubung kembali...`);
-            setTimeout(() => joinVoice(client, channelId, config), 10000);
+            console.log(`[${client.user.username}] Voice connection lost. Trying to reconnect....`);
+            scheduleReconnect(client, channelId, config);
         });
     } catch(e) {
         console.error(`[${client.user.username}] Failed to join voice channel: ${e}`);
-        setTimeout(() => joinVoice(client, channelId, config), 10000);
+        scheduleReconnect(client, channelId, config, reconnectMeta);
     }
 }
 
