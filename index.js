@@ -1,7 +1,7 @@
 import "dotenv/config";
 import cron from "node-cron";
 import { Client } from 'discord.js-selfbot-v13';
-import { joinVoiceChannel } from "@discordjs/voice";
+import { joinVoiceChannel, VoiceConnectionStatus } from "@discordjs/voice";
 import { DateTime } from "luxon";
 import generateMeme from "./meme.js";
 
@@ -30,6 +30,11 @@ const client = new Client();
 const joinVoice = async (client, channelId, config) => {
     try {
         const channel = await client.channels.fetch(channelId).catch(() => null);
+        if (!channel) {
+            console.error(`[${client.user?.username || 'UNKNOWN'}] Channel ${channelId} not found.`);
+            return setTimeout(() => joinVoice(client, channelId, config), 10000);
+        }
+
         const connection = joinVoiceChannel({
             channelId: channel.id,
             guildId: channel.guild.id,
@@ -43,7 +48,7 @@ const joinVoice = async (client, channelId, config) => {
             setTimeout(() => joinVoice(client, channelId, config), 10000);
         });
         
-        connection.on('disconnect', () => {
+        connection.on(VoiceConnectionStatus.Disconnected, () => {
             console.log(`[${client.user.username}] Voice connection terputus. Mencoba terhubung kembali...`);
             setTimeout(() => joinVoice(client, channelId, config), 10000);
         });
